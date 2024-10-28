@@ -1,5 +1,16 @@
 import '@/app/ui/global.css';
 import { inter } from '@/app/ui/fonts';
+import { Metadata } from 'next';
+
+//标签名称统一构建，%s用于页面自定义名称
+export const metadata: Metadata = {
+  title:{
+    template: '%s | Acme Dashboard',
+    default: 'Acme Dashboard',
+  },
+  description:'The official Next.js Course, built with App Router .',
+  metadataBase: new URL('https://next-learn-dashboard.vercel.sh'),
+};
 
 export default function RootLayout({
   children,

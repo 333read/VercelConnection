@@ -4,6 +4,8 @@ import { z } from 'zod';
 import { sql } from '@vercel/postgres'
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { signIn } from '@/auth';
+import { AuthError } from 'next-auth';
 
 
 const FormSchema = z.object({
@@ -34,6 +36,7 @@ export type State = {
 };
 
 
+//新建发票
 export async function createInvoice(prevState: State, formData: FormData) {
     const validatedFields = CreateInvoice.safeParse({
         customerId: formData.get('customerId'),
@@ -69,6 +72,7 @@ export async function createInvoice(prevState: State, formData: FormData) {
     redirect('/dashboard/invoices');
 }
 
+//更新发票
 export async function updateInvoice(
     id: string, 
     prevState: State,
@@ -82,8 +86,8 @@ export async function updateInvoice(
 
     if (!validatedFields.success) {
         return {
-          errors: validatedFields.error.flatten().fieldErrors,
-          message: 'Missing Fields. Failed to Update Invoice.',
+            errors: validatedFields.error.flatten().fieldErrors,
+            message: 'Missing Fields. Failed to Update Invoice.',
         };
     }
 
@@ -106,7 +110,7 @@ export async function updateInvoice(
 }
 
 export async function deleteInvoice(id: string) {
-    throw new Error('Fail to delete invoice.');
+    // throw new Error('Fail to delete invoice.');
 
     try {
         await sql`DELETE FROM invoices WHERE id = ${id}`;
@@ -116,6 +120,24 @@ export async function deleteInvoice(id: string) {
         return { message: 'Database Error: Failed to Delete Invoice.' }
     }
 
-
-
 }
+
+//更新登录表单
+export async function authenticate(
+    prevState: string | undefined,
+    formDate: FormData,
+){
+    try{
+        await signIn('credentials', formDate);
+    }catch(error){
+        if(error instanceof AuthError){
+            switch (error.type){
+                case 'CredentialsSignin':
+                    return 'Invalid credentials';
+                default:
+                    return 'Something went wrong'
+            }
+        }
+        throw error;
+    }
+} 
